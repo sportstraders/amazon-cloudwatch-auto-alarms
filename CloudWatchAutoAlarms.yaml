@@ -22,6 +22,27 @@ Parameters:
     Description: Enter the Amazon SNS Notification ARN for alarm notifications, leave blank to disable notifications.
     Type: String
     Default: ""
+  LambdaAlarmTag:
+    Description: Lambda function will only create alarms for instances that are tagged with this name tag
+    Type: String
+    Default: Create_Auto_Alarms
+  LambdaCreateDefaultAlarms:
+    Description: When true, this will result in the default alarm set being created when the LambdaAlarmTag tag is present
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  LambdaLogLevel:
+    Description: Lambda log level
+    Type: String
+    Default: INFO
+    AllowedValues:
+      - DEBUG
+      - INFO
+      - WARNING
+      - ERROR
+      - CRITICAL
 
 Conditions:
   ConfigureAlarmNotifications: !Not [!Equals ["", !Ref AlarmNotificationARN]]
@@ -41,8 +62,8 @@ Resources:
         S3Key: !Ref S3DeploymentKey
       Environment:
         Variables:
-          ALARM_TAG: Create_Auto_Alarms
-          CREATE_DEFAULT_ALARMS: true
+          ALARM_TAG: !Ref LambdaAlarmTag
+          CREATE_DEFAULT_ALARMS: !Ref LambdaCreateDefaultAlarms
           CLOUDWATCH_NAMESPACE: CWAgent
           ALARM_CPU_HIGH_THRESHOLD: 75
           ALARM_CPU_CREDIT_BALANCE_LOW_THRESHOLD: 100
@@ -54,6 +75,7 @@ Resources:
           ALARM_LAMBDA_THROTTLE_THRESHOLD: 0
 
           DEFAULT_ALARM_SNS_TOPIC_ARN: !If [ConfigureAlarmNotifications, !Ref AlarmNotificationARN, !Ref "AWS::NoValue"]
+          LOGLEVEL: !Ref LambdaLogLevel
 
   CloudWatchAutoAlarmLambdaRole:
     Type: AWS::IAM::Role
