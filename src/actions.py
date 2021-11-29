@@ -290,6 +290,7 @@ def create_alarm(AlarmName, MetricName, ComparisonOperator, Period, Threshold, S
 
         if sns_topic_arn is not None:
             alarm['AlarmActions'] = [sns_topic_arn]
+            alarm['OKActions'] = [sns_topic_arn]
 
         cw_client.put_metric_alarm(**alarm)
 
